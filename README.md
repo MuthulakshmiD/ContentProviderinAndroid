@@ -38,100 +38,70 @@ Registeration Number : 212223040122
 
 MainActivity.java
 ```
-package com.example.exp4;
+package com.example.contacts;
 
-import android.Manifest;
-import android.annotation.SuppressLint;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.util.Log;
-import android.widget.Toast;
+import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 100;
-    private static final String TAG = "ContactLog";
+    TextView textView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
-                != PackageManager.PERMISSION_GRANTED) {
+        textView = findViewById(R.id.textView);
 
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.READ_CONTACTS},
-                    PERMISSIONS_REQUEST_READ_CONTACTS);
-        } else {
-            loadContactsToLogcat();
-        }
-    }
+        StringBuilder builder = new StringBuilder();
 
-    private void loadContactsToLogcat() {
         Cursor cursor = getContentResolver().query(
                 ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                null,
-                null,
-                null,
-                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC"
+                null, null, null, null
         );
 
-        if (cursor != null && cursor.getCount() > 0) {
+        if (cursor != null) {
             while (cursor.moveToNext()) {
-                @SuppressLint("Range") String name = cursor.getString(
+
+                String name = cursor.getString(
                         cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-                @SuppressLint("Range") String phoneNumber = cursor.getString(
+
+                String number = cursor.getString(
                         cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
 
-                Log.d(TAG, "Name: " + name + " | Phone: " + phoneNumber);
+                builder.append(name)
+                        .append(" - ")
+                        .append(number)
+                        .append("\n");
             }
             cursor.close();
         }
-    }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == PERMISSIONS_REQUEST_READ_CONTACTS) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                loadContactsToLogcat();
-            } else {
-                Toast.makeText(this, "Permission denied", Toast.LENGTH_LONG).show();
-            }
-        }
+        textView.setText(builder.toString());
     }
 }
 ```
 activity_main.xml
 ```
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:layout_height="match_parent">
 
     <TextView
-        android:layout_width="wrap_content"
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:padding="16dp"
+        android:textSize="16sp"
+        android:text="Contacts will appear here" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
 ```
 AndroidManifest.xml
 ```
